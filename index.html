@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KILKOL — The LOKLiK iCraft Runs Free Software</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="description" content="The LOKLiK iCraft's firmware is a modified build of Grbl_Esp32, licensed GPLv3. The vendor ships it locked, with no source and no attribution. Here is the evidence.">
+<style>
+  :root{
+    --bg:#0a0a0b; --panel:#141416; --panel2:#19191c; --line:#2a2a2f;
+    --tx:#d4d4d8; --mut:#8b8b92; --accent:#ff7a18; --term:#5ad97f;
+    --red:#ff6b6b; --maxw:880px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--tx);
+    font:16px/1.65 'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  code,kbd,pre,.mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* header */
+  header{border-bottom:1px solid var(--line);padding:54px 0 40px;background:
+     radial-gradient(900px 320px at 50% -120px, rgba(255,158,61,.10), transparent 70%)}
+  .kicker{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;letter-spacing:.32em;
+     text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  h1{font-size:clamp(30px,5.4vw,50px);line-height:1.08;margin:0 0 16px;font-weight:800;letter-spacing:-.02em}
+  h1 .em{color:var(--accent)}
+  .sub{font-size:clamp(17px,2.4vw,20px);color:var(--mut);max-width:62ch;margin:0}
+  .meta{margin-top:26px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;color:var(--mut);
+     display:flex;flex-wrap:wrap;gap:8px 20px}
+  .meta b{color:var(--tx);font-weight:600}
+
+  /* verdict box */
+  .verdict{margin:34px 0 0;background:linear-gradient(180deg,var(--panel2),var(--panel));
+     border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:22px 24px}
+  .verdict h2{margin:0 0 8px;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+  .verdict p{margin:0;font-size:17px}
+
+  section{padding:46px 0;border-bottom:1px solid var(--line)}
+  h2.sec{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);margin:0 0 6px;
+     font-family:'JetBrains Mono',ui-monospace,monospace}
+  h3{font-size:clamp(22px,3.4vw,30px);line-height:1.18;margin:.1em 0 .5em;font-weight:750;letter-spacing:-.01em}
+  p{margin:0 0 16px}
+  .lead{font-size:18px}
+  strong{color:#fff}
+
+  /* terminal / evidence block */
+  .term{background:#0a0c0f;border:1px solid var(--line);border-radius:10px;overflow:auto;margin:18px 0}
+  .term .bar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid var(--line);
+     background:#10131a;color:var(--mut);font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px}
+  .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .term pre{margin:0;padding:15px 16px;font-size:13px;line-height:1.6;color:#cdd3dc;white-space:pre}
+  .term .gr{color:var(--term)} .term .am{color:var(--accent)} .term .mu{color:#6b7480} .term .rd{color:var(--red)}
+
+  /* figures */
+  figure{margin:20px 0}
+  figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#000;
+     transition:border-color .15s ease, transform .15s ease}
+  figure a:hover img{border-color:var(--accent)}
+
+  /* download list */
+  .dl{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .dl li{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 12px;
+     display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px}
+  .dl li a{font-weight:600}
+  .dl li span{color:var(--mut);font-size:11px}
+  .note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--term);
+     border-radius:10px;padding:14px 16px;margin:18px 0 0;font-size:14px;color:var(--mut)}
+  .note b{color:var(--tx)}
+  @media(max-width:560px){.dl{grid-template-columns:1fr}}
+  figcaption{margin-top:9px;font-size:13px;color:var(--mut);font-family:'JetBrains Mono',ui-monospace,monospace}
+  figcaption b{color:var(--tx)}
+
+  /* compare grid */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 19px}
+  .card h4{margin:0 0 12px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase}
+  .card.up h4{color:var(--term)} .card.lk h4{color:var(--accent)}
+  .card ul{margin:0;padding-left:18px;color:var(--mut)} .card li{margin:5px 0}
+  .card.mono ul{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;list-style:none;padding-left:0}
+  .card.mono li::before{content:"› ";color:var(--line)}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  td.mono,th.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+  tr:hover td{background:rgba(255,255,255,.015)}
+
+  .pill{display:inline-block;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;padding:2px 9px;border-radius:999px;
+     border:1px solid var(--line);color:var(--mut);vertical-align:middle}
+  .pill.ok{color:var(--term);border-color:rgba(90,217,127,.4)}
+  .pill.no{color:var(--red);border-color:rgba(255,107,107,.4)}
+
+  /* timeline */
+  .tl{list-style:none;margin:8px 0 0;padding:0}
+  .tl li{position:relative;padding:0 0 20px 26px;border-left:1px solid var(--line)}
+  .tl li:last-child{border-left-color:transparent}
+  .tl li::before{content:"";position:absolute;left:-5px;top:4px;width:9px;height:9px;border-radius:50%;
+     background:var(--accent)}
+  .tl b{color:#fff}
+  .tl .t{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--mut);display:block}
+
+  .ask{background:linear-gradient(180deg,rgba(255,158,61,.07),transparent);border:1px solid var(--line);
+     border-radius:14px;padding:26px 26px}
+  .ask h3{margin-top:0}
+  .quote{border-left:3px solid var(--line);padding:4px 0 4px 18px;color:var(--mut);font-style:italic;margin:16px 0}
+
+  footer{padding:40px 0 70px;color:var(--mut);font-size:14px}
+  footer .mono{font-size:12.5px}
+  .small{font-size:13px;color:var(--mut)}
+  ::selection{background:rgba(255,158,61,.28)}
+  @media(max-width:680px){.cols{grid-template-columns:1fr}}
+  @media print{body{background:#fff;color:#000}.term{background:#f6f6f6}header{background:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">Case file · kilkol</p>
+    <h1>The machine they sell you locked<br>is running <span class="em">free software</span>.</h1>
+    <p class="sub">The LOKLiK iCraft's brain is a modified build of <strong>Grbl_Esp32</strong> — an
+    open-source CNC firmware licensed under the GPLv3. The vendor ships it behind a login,
+    strips the name off it, and won't hand over the source. Here is the evidence, and how to
+    check it yourself.</p>
+    <div class="meta">
+      <span><b>Device:</b> LOKLiK iCraft</span>
+      <span><b>Firmware:</b> Grbl_ESP32 1.3a</span>
+      <span><b>License:</b> GPL&nbsp;v3</span>
+      <span><b>Status:</b> source requested</span>
+    </div>
+
+    <div class="verdict">
+      <h2>The short version</h2>
+      <p>It’s not a guess. The firmware <strong>says its own name and version on boot</strong>,
+      that version matches the upstream GPLv3 project <strong>character-for-character</strong>,
+      and the vendor distributes it with <strong>no source, no offer of source, and no
+      attribution</strong> — while their own app credits every <em>other</em> open-source
+      component it uses. The fix is simple: publish the source.</p>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">01 · The cover story</h2>
+    <h3>A sealed appliance you’re meant to drive only through their app</h3>
+    <p class="lead">The iCraft is marketed as a closed cutting machine. Firmware arrives only
+    through LOKLiK’s login-gated <em>IdeaStudio</em> software and a standalone updater. Nowhere
+    in the box, the marketing, or the app is there any mention of Grbl, of open source, or of a
+    license. The clear message: this is our proprietary product, use our tools.</p>
+    <figure>
+      <a href="evidence/board.jpg" target="_blank" rel="noopener">
+        <img src="evidence/board_thumb.jpg" alt="The LOKLiK iCraft controller board, an ESP32-based MAIN-CUT-G2" loading="lazy">
+      </a>
+      <figcaption><b>Exhibit A — the controller.</b> Silkscreen <span style="color:var(--accent)">MAIN-CUT-G2 V1.0 · 2024-07</span>.
+        The shielded module at upper-left is an Espressif <b>ESP32</b>; the chips under heatsinks at right are the
+        Trinamic TMC2209 stepper drivers. A 2024 board running 2021-dated open-source firmware. <b>Click to enlarge.</b></figcaption>
+    </figure>
+    <p>Then the machine spoke for itself.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">02 · What it says when you listen</h2>
+    <h3>The boot banner</h3>
+    <p>Connected to the controller’s serial port, the firmware announces exactly what it is —
+    every single power-up:</p>
+    <div class="term">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;serial · 115200 baud</div>
+<pre><span class="mu">&gt;&gt;&gt; reset</span>
+[MSG:<span class="gr">Grbl_ESP32 Ver 1.3a Date 20211103</span>]
+[MSG:Using machine:<span class="am">LOKLiK_iCraft</span>]
+[MSG:Axis count 3]
+[MSG:Ready]</pre>
+    </div>
+    <figure>
+      <a href="evidence/bootlog.png" target="_blank" rel="noopener">
+        <img src="evidence/bootlog.png" alt="Serial console capture of the LOKLiK iCraft boot log showing Grbl_ESP32 Ver 1.3a" loading="lazy">
+      </a>
+      <figcaption><b>Exhibit B — the full boot log</b>, captured on the serial console (COM11, 115200 baud). Note also
+        <span style="color:var(--accent)">Compiled with ESP32 SDK:v3.2.3</span> and the three TMC2209 axes with their GPIO pins.
+        <b>Click to enlarge.</b></figcaption>
+    </figure>
+    <p><span class="mono">Grbl_ESP32</span> is the name of the upstream open-source project.
+    <span class="mono">1.3a</span> is its version. <span class="mono">20211103</span> is its
+    build date. <span class="mono">Using machine:</span> is Grbl_Esp32’s own configuration
+    mechanism. The product never told you any of this — the firmware did.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">03 · The fingerprint</h2>
+    <h3>Its own source paths are baked into the binary</h3>
+    <p>Pull the printable strings out of any of the firmware images the vendor distributes and
+    the project’s identity is everywhere — including a path straight from the upstream source
+    tree, left behind by the compiler:</p>
+    <div class="term">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;strings firmware_v06.bin</div>
+<pre>Grbl_ESP32 Ver %s Date %s
+Grbl %s ['$' for help]
+[VER:%s.%s:%s]
+<span class="am">Grbl_Esp32/src/I2SOut.cpp</span>          <span class="mu"># upstream source path, compiled in</span>
+) # FW target:grbl-embedded  # FW HW:
+'$H'|'$X' to unlock</pre>
+    </div>
+    <p>The whole settings system uses Grbl_Esp32’s own vocabulary too —
+    <span class="mono">Homing/Feed</span>, <span class="mono">Spindle/Delay/SpinUp</span>,
+    <span class="mono">GCode/LaserMode</span>, <span class="mono">X/StepsPerMm</span> — matching
+    the upstream definitions exactly.</p>
+    <figure>
+      <a href="evidence/ghidra_strings_grbl.png" target="_blank" rel="noopener">
+        <img src="evidence/ghidra_strings_grbl.png" alt="Ghidra defined-strings listing: Grbl_ESP32 banner and the Grbl_Esp32/src/I2SOut.cpp source path" loading="lazy">
+      </a>
+      <figcaption><b>Exhibit C — the firmware's own strings, in Ghidra.</b> The
+        <span style="color:var(--accent)">Grbl_ESP32</span> banner, the <span class="mono">'$' for help</span>
+        prompt, and the leaked build path <span style="color:var(--accent)">Grbl_Esp32/src/I2SOut.cpp</span>.
+        <b>Click to enlarge.</b></figcaption>
+    </figure>
+    <figure>
+      <a href="evidence/ghidra_decompiler.png" target="_blank" rel="noopener">
+        <img src="evidence/ghidra_decompiler.png" alt="Ghidra disassembly listing and C decompiler of the firmware" loading="lazy">
+      </a>
+      <figcaption><b>Exhibit D — the firmware open in a disassembler</b> (Ghidra, Xtensa). Raw
+        listing on the left, decompiled C on the right. <b>Click to enlarge.</b></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">04 · The smoking gun</h2>
+    <h3>The version constants match upstream, to the character</h3>
+    <p>The open-source Grbl_Esp32 source code defines its version and build date like this:</p>
+    <div class="term">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;Grbl_Esp32/src/Grbl.h <span class="mu">— github.com/bdring/Grbl_Esp32</span></div>
+<pre>const char* const GRBL_VERSION       = <span class="gr">"1.3a"</span>;
+const char* const GRBL_VERSION_BUILD = <span class="gr">"20211103"</span>;</pre>
+    </div>
+    <p>The LOKLiK device reports <span class="mono">Ver <span style="color:var(--term)">1.3a</span>
+    Date <span style="color:var(--term)">20211103</span></span>. The version <em>and</em> the
+    build-date string are identical. This isn’t a similar idea independently reinvented — it is a
+    <strong>build of that exact upstream release</strong>. And that release is unambiguously
+    licensed:</p>
+    <div class="quote">“Grbl is free software: you can redistribute it and/or modify it under the
+    terms of the GNU General Public License as published by the Free Software Foundation, either
+    version 3 of the License, or (at your option) any later version.”</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">05 · What they added</h2>
+    <h3>A whole private layer bolted onto the GPL code</h3>
+    <p>This is a <em>modified</em> build. Across the eight firmware versions the updater
+    distributes, the vendor added an entire settings namespace — <span class="mono">SJConfig</span>
+    — that exists nowhere in upstream Grbl_Esp32. (<span class="mono">SJ</span> matches the
+    vendor’s own software namespace, <span class="mono">com.sjtech</span>.)</p>
+    <div class="cols">
+      <div class="card up mono"><h4>Stock Grbl_Esp32 1.3a</h4>
+        <ul>
+          <li>Homing/Feed</li><li>Spindle/Delay/SpinUp</li><li>GCode/LaserMode</li>
+          <li>X/StepsPerMm</li><li>Stepper/IdleTime</li><li>Limits/Soft</li>
+        </ul></div>
+      <div class="card lk mono"><h4>Added by the vendor (not upstream)</h4>
+        <ul>
+          <li>SJConfig/SN</li><li>SJConfig/ProductName</li><li>SJConfig/BlueName</li>
+          <li>SJConfig/Left&amp;RightPenOffset</li><li>SJConfig/AxisOffset_X/Y/Z</li>
+          <li>SJConfig/AxisCompens_X0…X10</li>
+        </ul></div>
+    </div>
+    <p>And it’s actively developed: versions v07/v08 grow the axis-compensation feature into an
+    <strong>11-point table per axis</strong>, taking the <span class="mono">SJConfig</span> key
+    set from 18 entries to 62. This vendor layer is part of the work — and therefore part of the
+    source the license requires them to release.</p>
+    <figure>
+      <a href="evidence/ghidra_sjconfig.png" target="_blank" rel="noopener">
+        <img src="evidence/ghidra_sjconfig.png" alt="Ghidra defined strings filtered to SJConfig, the vendor-added settings" loading="lazy">
+      </a>
+      <figcaption><b>Exhibit E — the vendor's <span style="color:var(--accent)">SJConfig</span> layer</b>,
+        filtered in Ghidra: serial number, product name, Bluetooth name, dual-pen offsets, axis
+        offset &amp; compensation — none of which exist in upstream Grbl_Esp32. <b>Click to enlarge.</b></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">06 · What they hid</h2>
+    <h3>They know how to credit open source. They just didn’t credit this.</h3>
+    <p>LOKLiK’s desktop application ships license notices for the various open-source components
+    <em>it</em> uses — so the vendor plainly understands open-source attribution and is capable of
+    it. Yet the GPLv3 firmware that is the machine’s entire brain appears in none of it: no
+    Grbl, no Grbl_Esp32, no GPL, anywhere in the product. The result is that a customer cannot
+    learn the firmware is free software, and cannot get its source.</p>
+    <table>
+      <tr><th>Obligation under GPLv3</th><th>Provided?</th></tr>
+      <tr><td>Complete Corresponding Source for the conveyed binary (§6)</td><td><span class="pill no">no</span></td></tr>
+      <tr><td>Written offer of source, or source alongside the binary (§6)</td><td><span class="pill no">no</span></td></tr>
+      <tr><td>License &amp; attribution notices preserved/conveyed (§4–5)</td><td><span class="pill no">no</span></td></tr>
+      <tr><td>Firmware readable / not encryption-locked</td><td><span class="pill ok">yes — plaintext</span></td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">07 · The evidence on file</h2>
+    <h3>Eight versions, one identity, fixed forever by hash</h3>
+    <p>Every distributed version identifies as Grbl_ESP32 1.3a, targets the
+    <span class="mono">LOKLiK_iCraft</span> machine, and carries the vendor’s
+    <span class="mono">SJConfig</span> layer. SHA-256 hashes are recorded so the exact artifacts
+    can’t be quietly swapped later.</p>
+    <table>
+      <tr><th>Ver</th><th class="mono">Size</th><th>Grbl</th><th>SJConfig keys</th><th class="mono">SHA-256 (first 16)</th></tr>
+      <tr><td>v01</td><td class="mono">1,562,832</td><td>1.3a</td><td>18</td><td class="mono">2091abe2949bc5a1</td></tr>
+      <tr><td>v02</td><td class="mono">1,563,824</td><td>1.3a</td><td>18</td><td class="mono">218426d65c605794</td></tr>
+      <tr><td>v03</td><td class="mono">1,565,200</td><td>1.3a</td><td>18</td><td class="mono">8648ca52a90fe5c3</td></tr>
+      <tr><td>v04</td><td class="mono">1,565,232</td><td>1.3a</td><td>18</td><td class="mono">8bd858845cdbf8b0</td></tr>
+      <tr><td>v05</td><td class="mono">1,565,664</td><td>1.3a</td><td>18</td><td class="mono">57d3e4dafdb08fa4</td></tr>
+      <tr><td>v06</td><td class="mono">1,565,728</td><td>1.3a</td><td>18</td><td class="mono">7a30fc95315b5c44</td></tr>
+      <tr><td>v07</td><td class="mono">1,219,808</td><td>1.3a</td><td>62</td><td class="mono">0380548b95299aa9</td></tr>
+      <tr><td>v08</td><td class="mono">1,219,744</td><td>1.3a</td><td>62</td><td class="mono">9f8d03d1ff7cbee2</td></tr>
+    </table>
+    <p class="small">Full hashes, the esptool segment map, and the complete methodology are in the
+    accompanying report (<a href="REPORT.md">REPORT.md</a>).</p>
+    <figure>
+      <a href="evidence/flashtool_versions.png" target="_blank" rel="noopener">
+        <img src="evidence/flashtool_versions.png" alt="LOKLiK FlashTool listing firmware versions v01 to v08 with update dates" loading="lazy">
+      </a>
+      <figcaption><b>Exhibit F — LOKLiK's own updater.</b> All eight versions (v01–v08), dated
+        2024-09 through <span style="color:var(--accent)">2026-01</span>, every one marked "Have" —
+        proof the binary is actively distributed. <b>Click to enlarge.</b></figcaption>
+    </figure>
+    <figure>
+      <a href="evidence/flashtool_models.png" target="_blank" rel="noopener">
+        <img src="evidence/flashtool_models.png" alt="LOKLiK FlashTool model picker: Crafter, iCraft, iPaint, iEngrave" loading="lazy">
+      </a>
+      <figcaption><b>Exhibit G — one tool, the whole ecosystem.</b> The same FlashTool flashes the
+        Crafter, iCraft, iPaint and iEngrave lines. <b>Click to enlarge.</b></figcaption>
+    </figure>
+
+    <h3 style="margin-top:34px">Download the firmware</h3>
+    <ul class="dl">
+      <li><a href="evidence/firmware_v01.bin" download>firmware_v01.bin</a><span>1.49 MB · 2091abe2</span></li>
+      <li><a href="evidence/firmware_v02.bin" download>firmware_v02.bin</a><span>1.49 MB · 218426d6</span></li>
+      <li><a href="evidence/firmware_v03.bin" download>firmware_v03.bin</a><span>1.49 MB · 8648ca52</span></li>
+      <li><a href="evidence/firmware_v04.bin" download>firmware_v04.bin</a><span>1.49 MB · 8bd85884</span></li>
+      <li><a href="evidence/firmware_v05.bin" download>firmware_v05.bin</a><span>1.49 MB · 57d3e4da</span></li>
+      <li><a href="evidence/firmware_v06.bin" download>firmware_v06.bin</a><span>1.49 MB · 7a30fc95</span></li>
+      <li><a href="evidence/firmware_v07.bin" download>firmware_v07.bin</a><span>1.16 MB · 0380548b</span></li>
+      <li><a href="evidence/firmware_v08.bin" download>firmware_v08.bin</a><span>1.16 MB · 9f8d03d1</span></li>
+      <li><a href="evidence/SHA256SUMS.txt" download>SHA256SUMS.txt</a><span>verify integrity</span></li>
+      <li><a href="evidence/board.jpg" target="_blank">board.jpg</a> &nbsp;·&nbsp; <a href="evidence/bootlog.png" target="_blank">bootlog.png</a><span>photos</span></li>
+    </ul>
+    <div class="note"><b>License &amp; redistribution.</b> These images are builds of Grbl_Esp32 and are therefore
+      themselves licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPLv3</a>, which expressly
+      permits redistribution. They are mirrored here under that license. Source for the unmodified upstream portion
+      is public at <a href="https://github.com/bdring/Grbl_Esp32">github.com/bdring/Grbl_Esp32</a>; the vendor's
+      <em>modified</em> Corresponding Source — the part this report asks for — is what remains unpublished. Verify any
+      file with <span class="mono">sha256sum -c SHA256SUMS.txt</span>.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">08 · Check it yourself</h2>
+    <h3>None of this requires taking my word for it</h3>
+    <p>Everything here is reproducible from a retail device with free tools. There is no flash
+    encryption to defeat.</p>
+    <div class="term">
+      <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        &nbsp;reproduce</div>
+<pre><span class="mu"># 1. read the firmware off the ESP32 (plaintext, no encryption)</span>
+esptool read_flash 0 0x800000 backup.bin
+
+<span class="mu"># 2. confirm it's an esptool image + see its layout</span>
+esptool --chip esp32 image-info firmware_v06.bin
+
+<span class="mu"># 3. look at who it says it is</span>
+strings firmware_v06.bin | grep -E "Grbl_ESP32|LOKLiK_iCraft|SJConfig"
+
+<span class="mu"># 4. compare to upstream — github.com/bdring/Grbl_Esp32</span>
+<span class="mu">#    Grbl.h: GRBL_VERSION "1.3a" / GRBL_VERSION_BUILD "20211103"</span></pre>
+    </div>
+    <p>For a full read, the firmware loads cleanly into Ghidra as <span class="mono">Xtensa:LE:32</span>
+    once the six esptool segments are placed at their addresses; the boot-banner and
+    <span class="mono">SJConfig</span> strings cross-reference straight into the vendor’s
+    modifications.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="sec">09 · How it came out</h2>
+    <h3>The short timeline</h3>
+    <ul class="tl">
+      <li><span class="t">A power surge</span><b>The machine bricks.</b> It survives a whole-house
+        surge but won’t connect to the vendor app over USB or Bluetooth.</li>
+      <li><span class="t">Teardown</span><b>It’s an ESP32.</b> The controller is a bog-standard
+        Espressif ESP32 — chip alive, 8&nbsp;MB flash, no encryption. A full backup comes off clean.</li>
+      <li><span class="t">Repair</span><b>A clean reflash fixes it.</b> The surge had corrupted part
+        of the app image; rewriting a known-good version brings it back.</li>
+      <li><span class="t">The reveal</span><b>It boots into GRBL.</b> On the serial console it
+        prints <span class="mono">Grbl_ESP32 Ver 1.3a</span> — the open-source firmware, wearing the
+        vendor’s machine name.</li>
+      <li><span class="t">Now</span><b>The paperwork.</b> A formal GPLv3 §6 source request to the
+        vendor; this report shared with the FSF and the Software Freedom Conservancy.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="ask">
+      <h2 class="sec">10 · The ask</h2>
+      <h3>Just release the source.</h3>
+      <p>LOKLiK built their product on GPLv3 software. The license they chose to build on asks one
+      thing in return for that gift: when you ship the binary, ship the source. That means the
+      <strong>Complete Corresponding Source for the LOKLiK iCraft firmware</strong> — all
+      distributed versions, the modified Grbl_Esp32 tree, the <span class="mono">LOKLiK_iCraft</span>
+      machine definition, the <span class="mono">SJConfig</span> layer, and the scripts and config
+      needed to build and flash it — under the GPLv3, with credit to the upstream authors.</p>
+      <p style="margin-bottom:0">It costs them nothing they’re entitled to keep. It’s simply the
+      deal. Honor it, and there’s nothing here to fight about.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>Upstream:</b> <a href="https://github.com/bdring/Grbl_Esp32">github.com/bdring/Grbl_Esp32</a>
+      — Grbl_Esp32 by bdring (Barton Dring), a port of <a href="https://github.com/gnea/grbl">Grbl</a>
+      by Sungeon “Sonny” Jeon. &nbsp;·&nbsp;
+      <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU GPL v3</a></p>
+    <p class="small">Compiled by Rev · <a href="https://jmscnc.com">jmscnc.com</a> · contact: therealrevjmoney@gmail.com ·
+      full report: <a href="REPORT.md">REPORT.md</a></p>
+    <p class="small mono">This page documents software-license compliance: a GPLv3 work distributed
+      in a product, and a request that the vendor meet the license they built upon. A cooperative
+      resolution is preferred.</p>
+  </div>
+</footer>
+
+<script>
+/* iframe auto-height: pushes content height to a parent WordPress page so the
+   embed grows/shrinks with no inner scrollbar. Harmless when not embedded. */
+(function(){
+  function pushHeight(){
+    try{ parent.postMessage({kilkolHeight: document.body.scrollHeight}, "*"); }catch(e){}
+  }
+  addEventListener("load", pushHeight);
+  addEventListener("resize", pushHeight);
+  setInterval(pushHeight, 1000);
+})();
+</script>
+</body>
+</html>

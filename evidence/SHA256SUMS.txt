@@ -1,0 +1,14 @@
+# SHA-256 — LOKLiK iCraft firmware (Grbl_ESP32 1.3a), as distributed by LOKLiK FlashTool
+# Verify with:  sha256sum -c SHA256SUMS.txt   (place firmware_vNN.bin alongside this file)
+
+2091abe2949bc5a19ba1baebda5dcd7b1173fcbd1af43fe0575b578b2905ca1c  firmware_v01.bin
+218426d65c6057940f03fd80e165c11d5268fb5c0a94bd209e709a04cef6864d  firmware_v02.bin
+8648ca52a90fe5c31ac668e3a0f4a3642f40d28c5fea3204c91430a5f801cd53  firmware_v03.bin
+8bd858845cdbf8b0d3d6373a674ac2cf4a1a5bcb512af781d88766c10e97ea83  firmware_v04.bin
+57d3e4dafdb08fa4652a5e72ea6b4b0575bd0d973527701107d9769a093c07a9  firmware_v05.bin
+7a30fc95315b5c442ef9aaf7a37efe65ebf4b058f0d96e0d80512e279bbac23c  firmware_v06.bin
+0380548b95299aa98e24cf02308924a5d579356a0aa7114c550524db76e97ff1  firmware_v07.bin
+9f8d03d1ff7cbee238b5a5ba03f901ddc7a4617fd586e400dbe14eada6cec098  firmware_v08.bin
+
+# Full-flash readback of the author's own device:
+da647a9ab5048efef5a252b4060fe4911f79f65180f4f6c1a1df948a43920e73  loklik_fw_backup.bin
