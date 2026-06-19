@@ -114,6 +114,17 @@
   .ask h3{margin-top:0}
   .quote{border-left:3px solid var(--line);padding:4px 0 4px 18px;color:var(--mut);font-style:italic;margin:16px 0}
 
+  /* email thread */
+  .mail{background:var(--panel);border:1px solid var(--line);border-radius:11px;margin:16px 0;overflow:hidden}
+  .mail.in{border-left:3px solid var(--red)}
+  .mail.out{border-left:3px solid var(--term)}
+  .mail .mh{padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel2);
+     font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--mut)}
+  .mail .mh b{color:var(--tx)}
+  .mail .mb{padding:15px 18px;font-size:15px}
+  .mail .mb p{margin:0 0 12px}
+  .mail .mb p:last-child{margin-bottom:0}
+
   footer{padding:40px 0 70px;color:var(--mut);font-size:14px}
   footer .mono{font-size:12.5px}
   .small{font-size:13px;color:var(--mut)}
@@ -123,6 +134,31 @@
 </style>
 </head>
 <body>
+
+<div id="help-banner" style="background:linear-gradient(180deg,rgba(255,122,24,.14),rgba(255,122,24,.04));border-bottom:1px solid rgba(255,122,24,.35)">
+  <div class="wrap" style="padding:18px 0">
+    <p class="kicker" style="color:var(--accent)">🚨 Call for community help &amp; contributions</p>
+    <p class="sub" style="margin-top:6px">The core motion system works — <strong>now we need help mapping the rest of the hardware.</strong>
+    The limit/home pins are already reverse-engineered from the factory <span class="mono">Grbl_Esp32</span> source;
+    the open gaps are the material and tool-depth sensors.</p>
+    <div style="overflow-x:auto">
+      <table style="border-collapse:collapse;margin:10px 0;font-size:.9em">
+        <thead><tr style="text-align:left">
+          <th style="padding:4px 14px 4px 0">Function</th><th style="padding:4px 14px 4px 0">Pin</th><th style="padding:4px 0">Status</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:3px 14px 3px 0">X limit / home</td><td class="mono" style="padding:3px 14px 3px 0">GPIO25</td><td style="padding:3px 0">known — IR sensor often <strong>dead</strong>; verify before homing X</td></tr>
+          <tr><td style="padding:3px 14px 3px 0">Z limit</td><td class="mono" style="padding:3px 14px 3px 0">GPIO39</td><td style="padding:3px 0">known (input-only pin)</td></tr>
+          <tr><td style="padding:3px 14px 3px 0">Y limit</td><td class="mono" style="padding:3px 14px 3px 0">—</td><td style="padding:3px 0">none (continuous feed)</td></tr>
+          <tr><td style="padding:3px 14px 3px 0">Buttons (start / hold / seek)</td><td class="mono" style="padding:3px 14px 3px 0">GPIO13 / 36 / 35</td><td style="padding:3px 0">known</td></tr>
+          <tr><td style="padding:3px 14px 3px 0">Mat &amp; tool-depth sensors</td><td class="mono" style="padding:3px 14px 3px 0">?</td><td style="padding:3px 0"><strong>unmapped — help wanted</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin:0"><strong>How to help:</strong> trace a sensor back to its ESP32 GPIO with a meter / logic analyzer →
+    submit a PR adding a sensor-enabled YAML to the <span class="mono">machines/</span> folder → or open an issue with what you find.</p>
+  </div>
+</div>
 
 <header>
   <div class="wrap">
@@ -136,7 +172,7 @@
       <span><b>Device:</b> LOKLiK iCraft</span>
       <span><b>Firmware:</b> Grbl_ESP32 1.3a</span>
       <span><b>License:</b> GPL&nbsp;v3</span>
-      <span><b>Status:</b> source requested</span>
+      <span><b>Status:</b> source public — after escalation</span>
     </div>
 
     <div class="verdict">
@@ -149,6 +185,79 @@
     </div>
   </div>
 </header>
+
+<section id="update" style="background:linear-gradient(180deg,rgba(255,122,24,.07),transparent)">
+  <div class="wrap">
+    <h2 class="sec" style="color:var(--accent)">Update · 2026-06-18 · they answered</h2>
+    <h3>The source is public now — but only after this went out.</h3>
+    <p class="lead">After the formal GPLv3 §6 source request, and after this report went public,
+    LOKLiK replied and pointed to a GitHub repository holding the firmware source. And it's the
+    real thing: it <strong>compiles</strong>, and the build <strong>matches the firmware on the
+    machine</strong> — same version string, byte-for-byte identical Grbl strings
+    (<span class="mono">Grbl_ESP32 1.3a · 20211103</span>). Credit where it's due: it's out.</p>
+
+    <p>But the timing tells its own story. GitHub's own record shows the repository's files are
+    dated 2023 — yet it was <strong>pushed to on the same day they replied to me</strong>. After
+    nearly three years it had <strong>zero stars, zero forks, zero watchers</strong>, it had
+    <strong>never once been saved by the Internet Archive</strong> (the snapshot taken 2026-06-18
+    is its <em>first</em>), and it didn't surface in search — which is why nobody, including me,
+    could find it. I can't prove from the outside whether it was literally set to "private" until
+    that day; GitHub doesn't expose that history. But in practice, the source was
+    <strong>disclosed to no one</strong> until this was forced into the open.</p>
+
+    <div class="meta" style="margin-top:6px">
+      <span><b>repo created:</b> 2023-09-05</span>
+      <span><b>pushed:</b> 2026-06-18 (the day they replied)</span>
+      <span><b>stars / forks / watchers:</b> 0 / 0 / 0</span>
+      <span><b>first web-archive:</b> 2026-06-18</span>
+    </div>
+
+    <h3 style="margin-top:34px">The exchange</h3>
+
+    <div class="mail in">
+      <div class="mh">▼ from <b>LOKLiK Support</b></div>
+      <div class="mb">
+        <p>Dear Customer,</p>
+        <p>Thank you for your message. We have checked with our product team, please kindly note
+        that our firmware code was uploaded to GitHub back on 2023, and the latest firmware code
+        has also been uploaded. Please check it out on GitHub.</p>
+        <p>If your machine still does not function properly, please let us know and we will look
+        into the best possible resolution (such as refund).</p>
+        <p>Thank you for your support and understanding. Kind Regards,</p>
+      </div>
+    </div>
+
+    <div class="mail out">
+      <div class="mh">▲ <b>my reply</b></div>
+      <div class="mb">
+        <p>Thank you for your reply, and for offering to help resolve this.</p>
+        <p>I did find the repository you pointed me to, and I've confirmed it builds and matches
+        the firmware on my machine (Grbl_ESP32 Ver 1.3a, dated 20211103). I appreciate that.</p>
+        <p>I want to be candid with you, though. While the files are dated 2023, GitHub's own
+        record shows the repository was pushed to on the same day you replied to me. After nearly
+        three years it had zero stars, zero forks, and zero watchers, it had never once been saved
+        by the Internet Archive, and it did not appear in GitHub search — which is exactly why I
+        could not find it earlier, despite looking hard. From the outside, every indication is that
+        it was private until today. I'm glad it's public now; I'd just ask that we be straight with
+        one another about that.</p>
+        <p>On the machine itself: the failure was caused by a power surge on my end, not a defect
+        in your product, and I have since repaired it myself. Since you kindly offered to make it
+        right, what I'd genuinely value is a replacement control board — the ESP32 controller is
+        the part the surge damaged — or, if that isn't possible, the refund you mentioned.</p>
+        <p>One sincere suggestion: the iCraft runs grbl_ESP32, which is excellent open-source
+        (GPLv3) firmware. I'd encourage you to tell your customers that, and to link the GitHub
+        repository from the product page and inside IdeaStudio. Far from hurting you, it's a
+        genuine selling point — the maker and CNC community actively seek out machines they can run
+        with standard G-code tools.</p>
+      </div>
+    </div>
+
+    <div class="note"><b>Where it stands.</b> The source is public, mirrored, and verified to
+    build — that's the outcome this was always about. What's left is for LOKLiK to <b>keep it
+    public</b> and to <b>tell their customers the firmware is grbl_ESP32 under the GPLv3</b>, with a
+    link to the repo from the product. The original report below is preserved as first published.</div>
+  </div>
+</section>
 
 <section>
   <div class="wrap">
@@ -418,8 +527,12 @@ strings firmware_v06.bin | grep -E "Grbl_ESP32|LOKLiK_iCraft|SJConfig"
       <li><span class="t">The reveal</span><b>It boots into GRBL.</b> On the serial console it
         prints <span class="mono">Grbl_ESP32 Ver 1.3a</span> — the open-source firmware, wearing the
         vendor’s machine name.</li>
-      <li><span class="t">Now</span><b>The paperwork.</b> A formal GPLv3 §6 source request to the
-        vendor; this report shared with the FSF and the Software Freedom Conservancy.</li>
+      <li><span class="t">The paperwork</span><b>A formal request.</b> A GPLv3 §6 source request to
+        the vendor; this report made public.</li>
+      <li><span class="t">2026-06-18</span><b>They respond — and the repo goes public.</b> LOKLiK
+        points to a GitHub repository: files dated 2023, but pushed that same day, with 0 stars,
+        0 forks, and its first-ever web-archive snapshot. The source builds and matches the device.
+        <a href="#update">See the exchange ↑</a></li>
     </ul>
   </div>
 </section>
@@ -444,7 +557,7 @@ strings firmware_v06.bin | grep -E "Grbl_ESP32|LOKLiK_iCraft|SJConfig"
 <footer>
   <div class="wrap">
     <p style="font-size:15px"><b style="color:var(--accent)">Source, firmware &amp; full evidence on GitHub:</b>
-      <a href="https://github.com/revjmoney/loklik-icraft-grbl">github.com/revjmoney/loklik-icraft-grbl</a>
+      <a href="https://github.com/revjmoney/loklik-icraft-firmware">github.com/revjmoney/loklik-icraft-firmware</a>
       &nbsp;— clone it, verify it, fork it.</p>
     <p><b>Upstream:</b> <a href="https://github.com/bdring/Grbl_Esp32">github.com/bdring/Grbl_Esp32</a>
       — Grbl_Esp32 by bdring (Barton Dring), a port of <a href="https://github.com/gnea/grbl">Grbl</a>
