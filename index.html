@@ -554,6 +554,51 @@ strings firmware_v06.bin | grep -E "Grbl_ESP32|LOKLiK_iCraft|SJConfig"
   </div>
 </section>
 
+<section id="runfree" style="background:linear-gradient(180deg,rgba(90,217,127,.06),transparent)">
+  <div class="wrap">
+    <h2 class="sec" style="color:var(--term)">11 · Run it free</h2>
+    <h3>We didn't just ask for the source — we took the machine back.</h3>
+    <p class="lead">The freed firmware is only half the story. The iCraft is an ESP32 speaking
+    standard G-code, so it doesn't need LOKLiK's cloud, login, or app at all. Reflashed with
+    <a href="https://github.com/bdring/FluidNC">FluidNC</a> — the open successor to
+    <span class="mono">Grbl_ESP32</span>, configured by a plain YAML file — it runs entirely on
+    free software you control, over USB <em>or</em> WiFi.</p>
+
+    <div class="cols">
+      <div class="card up"><h4>The machine — FluidNC</h4>
+        <ul>
+          <li>Same ESP32 (or a fresh one + <span class="mono">TB6600</span> drivers) running open <strong>FluidNC</strong></li>
+          <li>Configured by a YAML file — no recompile, with a WiFi web UI</li>
+          <li>A field-tuned iCraft config in the repo: motion, pins, no cloud</li>
+          <li>Drive it with any G-code sender (gSender, UGS&hellip;)</li>
+        </ul></div>
+      <div class="card lk"><h4>The toolchain — KilKol Knife</h4>
+        <ul>
+          <li>Design in <strong>LightBurn</strong>, cut with a drag knife — no proprietary app</li>
+          <li>Converts LightBurn g-code &rarr; drag-knife g-code (blade-offset comp + overcut)</li>
+          <li>Multi-pass &ldquo;two-cut trick&rdquo; + material presets (chrome / vinyl / HTV)</li>
+          <li>Tiny dependency-free Python (GUI + CLI), inch-native output</li>
+        </ul></div>
+    </div>
+
+    <p>The whole pipeline: <strong>design in LightBurn &rarr; KilKol Knife &rarr; gSender &rarr;
+    vinyl.</strong> No cloud, no login, no subscription — your hardware answering to you.</p>
+
+    <h3 style="margin-top:32px">Download</h3>
+    <ul class="dl">
+      <li><a href="tools/kilkol-knife.zip" download>kilkol-knife.zip</a><span>the converter app + docs</span></li>
+      <li><a href="https://github.com/revjmoney/loklik-icraft-firmware">GitHub repo</a><span>firmware · config · app</span></li>
+      <li><a href="https://github.com/revjmoney/loklik-icraft-firmware/blob/main/machines/icraft-wroom-tb6600-tuned.yaml">FluidNC config (YAML)</a><span>field-tuned iCraft</span></li>
+      <li><a href="https://github.com/revjmoney/loklik-icraft-firmware/blob/main/FLASH_FLUIDNC.md">FLASH_FLUIDNC.md</a><span>backup &rarr; flash &rarr; config</span></li>
+    </ul>
+    <div class="note"><b>Part of the Simian Tactical Toolbox</b> by Rev. J. Money
+      (<a href="https://jmscnc.com">jmscnc.com</a>). KilKol Knife and the firmware tune are
+      <a href="https://www.gnu.org/licenses/gpl-3.0.html">GPLv3</a> — clone, run, remix. Full setup
+      and the blade-depth / pressure / blade-angle tuning guide ship with it in the repo README and
+      <span class="mono">TUNING.md</span>.</div>
+  </div>
+</section>
+
 <footer>
   <div class="wrap">
     <p style="font-size:15px"><b style="color:var(--accent)">Source, firmware &amp; full evidence on GitHub:</b>
