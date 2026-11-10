@@ -114,4 +114,11 @@ vendor to do what the license they built on requires: publish the corresponding 
 
 ---
 
+## Related
+
+- [`firmware/`](firmware/) — buildable source, FluidNC/Marlin configs, factory images, and docs, merged from [loklik-icraft-firmware](https://github.com/revjmoney/loklik-icraft-firmware)
+- [LoklikIdeaStudio-Firmware-revj](https://github.com/revjmoney/LoklikIdeaStudio-Firmware-revj) — fork of the Loklik Idea Studio firmware
+
+---
+
 *Writeup & evidence by Rev — JMS CNC · <https://jmscnc.com/kilkol>*

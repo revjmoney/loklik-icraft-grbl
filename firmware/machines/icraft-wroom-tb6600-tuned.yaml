@@ -1,0 +1,97 @@
+# =============================================================================
+# FluidNC config -- LokLik iCraft mechanics on a FRESH ESP32-WROOM + 3x TB6600
+# =============================================================================
+# This is the FIELD-TUNED config: a real iCraft was gutted of its (lightning-
+# fried) factory board and rebuilt on a NodeMCU ESP32-WROOM-32 driving three
+# external TB6600 stepper drivers. Every value below was confirmed on the bench.
+# It is the "it actually cuts" companion to diy-esp32-tb6600-fluidnc-config.yaml.
+#
+# Bare build: motors only -- NO homing, NO limits, NO sensors, NO laser.
+#
+# MOTION TUNE carried from the factory iCraft (Grbl_Esp32 SJMachine.h, 16
+# microsteps): X 160, Y 188.4, Z 90 steps/mm. Valid ONLY if each TB6600's
+# microstep DIP = 16 (steps/mm is driver-independent when microsteps match).
+#
+# WIRING is COMMON-ANODE: all PUL+/DIR+/ENA+ -> 3.3V, the ESP32 sinks PUL-/DIR-,
+# so the step pins are active-low (:low). Full wiring + DIP tables:
+#   docs in this repo + the NodeMCU pinout card.
+#
+# TB6600 DIP SWITCHES (set BEFORE powering motors):
+#   microstep -> 16
+#   current   -> X/Y (NEMA 17)  ~1.5 A ;  Z (smaller motor)  ~0.5-1.0 A
+#   ^ a too-hot motor means the current DIP is set above the motor's rating.
+#
+# REAL-WORLD GOTCHAS that bit us (documented so they don't bite you):
+#   * X/Y can come out crossed depending on which driver you wire to which
+#     motor -- if jogging X moves Y, swap the step/dir pins between the x: and
+#     y: blocks (done below: X is on gpio18/19, Y on gpio16/17).
+#   * If an axis runs backwards, add :low to that axis's direction_pin (X has it
+#     below) OR swap one coil pair. Direction is NOT preset on a fresh build.
+#   * FluidNC YAML takes NO inline comments after a value -- a trailing "# ..."
+#     on a pin line makes pin creation fail. Keep comments on their own lines.
+# =============================================================================
+
+name: "iCraft on WROOM + TB6600 (tuned)"
+board: "ESP32 DevKit (WROOM-32)"
+
+stepping:
+  engine: RMT
+  idle_ms: 250
+  pulse_us: 4
+  dir_delay_us: 2
+  disable_delay_us: 0
+
+axes:
+  x:
+    steps_per_mm: 160
+    # 15 in/min (381 mm/min) -- 45 ipm browned out the weak 1.5A brick (the speed
+    # draw, NOT WiFi -- WiFi was off). Back to 15 till the 36V/360W is in; then 45.
+    max_rate_mm_per_min: 381
+    acceleration_mm_per_sec2: 200
+    max_travel_mm: 330
+    motor0:
+      stepstick:
+        # Carriage motor landed on the gpio18/19 driver (X/Y were crossed), and
+        # X ran backwards -> direction inverted with :low.
+        step_pin: gpio.18:low
+        direction_pin: gpio.19:low
+
+  y:
+    # Y = grit roller. Bench-cal 2026-06-21: cmd 0.250" moved 0.292" -- 188.4 over-
+    # traveled 16.8%. 188.4 * 0.250/0.292 = 161.3 (refine over a 10" test move).
+    steps_per_mm: 161.3
+    # 15 in/min (381 mm/min) -- throttled with X for the weak brick.
+    # Target 30 ipm (762) once the 36V/360W PSU is in.
+    max_rate_mm_per_min: 381
+    acceleration_mm_per_sec2: 200
+    max_travel_mm: 1000
+    motor0:
+      stepstick:
+        # Y also ran backwards on this fresh build -> direction inverted (:low).
+        # (Like X, direction is NOT preset on a new TB6600 build -- jog and flip.)
+        step_pin: gpio.16:low
+        direction_pin: gpio.17:low
+
+  z:
+    steps_per_mm: 90
+    # Z = blade leadscrew plunging into material against the holder spring.
+    # 8 in/min (203 mm/min) + very low accel (75): a gentle plunge seats the blade
+    # cleanly into hard chrome, cuts current, no skipped Z under spring+cut load.
+    max_rate_mm_per_min: 203
+    acceleration_mm_per_sec2: 75
+    # Measured usable Z travel ~0.95 in = 24.13 mm (factory home switches removed,
+    # which ate some range). Envelope only -- NOT enforced without a Z home
+    # switch + homing + soft_limits.
+    max_travel_mm: 24.13
+    motor0:
+      stepstick:
+        step_pin: gpio.21:low
+        direction_pin: gpio.22
+        # Z-ONLY idle release: the blade leadscrew is self-locking, so it holds
+        # depth when de-energized. With idle_ms above, Z drops its (heat-making)
+        # holding current ~250 ms after it stops, while X/Y stay fully energized.
+        # Wire P23 (gpio.23) -> the Z driver's ENA- ONLY; leave X/Y ENA- open.
+        disable_pin: gpio.23:low
+
+start:
+  must_home: false
