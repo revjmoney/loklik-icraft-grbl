@@ -1,0 +1,77 @@
+# CI: builds the mirrored Grbl_Esp32 firmware (firmware/platformio.ini, env release) with
+# PlatformIO, uploads the images, and runs the private data guard.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Firmware (PlatformIO, esp32dev)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25  # v5.1.0
+        with:
+          path: |
+            ~/.platformio/.cache
+            ~/.platformio/packages
+            ~/.platformio/platforms
+          key: pio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
+      - name: PlatformIO
+        run: pip install --retries 5 platformio==6.1.18
+      - name: Build env release
+        run: pio run -d firmware -e release
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: grbl-esp32-release
+          path: |
+            firmware/.pio/build/release/firmware.bin
+            firmware/.pio/build/release/firmware.elf
+            firmware/.pio/build/release/partitions.bin
+          if-no-files-found: error
+          retention-days: 30
+
+  guard:
+    name: Private data guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Scan tracked files for private data
+        env:
+          ALLOWED_IPS: "192.168.1.11 192.168.1.153"
+        run: |
+          fail=0
+          ex=(-- . ':(exclude).github/workflows/ci.yml' ':(exclude)*.png')
+          if git grep -n -I -E 'myemail937|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY' "${ex[@]}"; then
+            echo "::error::A private email, GitHub token or private key is in the tree"
+            fail=1
+          fi
+          if git grep -n -I -i -E 'rose[ _-]?engine|guilloch|gen-rose' "${ex[@]}"; then
+            echo "::error::Private stash material is in the tree"
+            fail=1
+          fi
+          found=$(git grep -h -o -I -E '192\.168\.1\.[0-9]{1,3}' "${ex[@]}" | sort -u || true)
+          for ip in $found; do
+            case " $ALLOWED_IPS " in
+              *" $ip "*) ;;
+              *)
+                git grep -n -I -F "$ip" "${ex[@]}" || true
+                echo "::error::Home network address $ip is in the tree"
+                fail=1
+                ;;
+            esac
+          done
+          if [ "$fail" -ne 0 ]; then exit 1; fi
+          echo "Guard passed: no private data found"
