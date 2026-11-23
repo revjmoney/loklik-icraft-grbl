@@ -137,7 +137,7 @@ bool SJMotorCtrl::yAxisHoming(uint8_t client) {
     motorY.setSpeed(0);
     motorY.setMaxSpeed(toStepY(3000 / 60)); 
     motorY.runToNewPosition(-(motorY.currentPosition()));
- 
+    return true;   // blocking move back to 0 finished (the function had no return: undefined behaviour)
 }
 bool SJMotorCtrl::zAxisHoming(uint8_t client) {
     if(z_homing_try_count>2){
